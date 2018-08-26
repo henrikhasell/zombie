@@ -51,36 +51,6 @@ static bool safeGridFetch(const Grid<bool> &grid, size_t x, size_t y)
     return false;
 }
 
-static void floodFill(Grid<bool> &grid, size_t x, size_t y)
-{
-    std::queue<glm::uvec2> openSet;
-    openSet.emplace(x, y);
-
-    while(!openSet.empty())
-    {
-        const glm::uvec2 &current = openSet.front();
-
-        grid.getTile(current.x, current.y) = false;
-
-        const glm::uvec2 neighbours[] = {
-            { current.x - 1, current.y },
-            { current.x + 1, current.y },
-            { current.x, current.y - 1 },
-            { current.x, current.y + 1 }
-        };
-
-        for(const glm::uvec2 &neighbour : neighbours)
-        {
-            if(safeGridFetch(grid, neighbour.x, neighbour.y))
-            {
-                openSet.emplace(neighbour.x, neighbour.y);
-            }
-        }
-
-        openSet.pop();
-    }
-}
-
 static Grid<bool> selectShape(Grid<bool> &grid, size_t x, size_t y)
 {
     Grid<bool> result(grid.w, grid.h);
@@ -152,6 +122,17 @@ static size_t getIndex(const Grid<bool> &grid, size_t x, size_t y)
 static Marching::Solution solveTile(const Grid<bool> &grid, size_t x, size_t y, Marching::Solution previousSolution)
 {
     size_t index = getIndex(grid, x, y);
+
+    if(index == 6 && previousSolution != Marching::Solution::Up)
+    {
+        return Marching::Solution::Right;
+    }
+
+    if(index == 9 && previousSolution != Marching::Solution::Right)
+    {
+        return Marching::Solution::Down;
+    }
+
     return solutions[index];
 }
 
@@ -207,11 +188,15 @@ std::vector<Shape> Marching::solveGrid(const Grid<bool> &grid)
     Grid<bool> copy = grid;
     std::vector<Shape> result;
 
-    for(size_t y = 0; y < grid.h; y++)
+    Marching::Solution solution = Marching::Solution::None;
+
+    for(int y = -1; y < (int)grid.h - 1; y++)
     {
-        for(size_t x = 0; x < grid.w; x++)
+        for(int x = -1; x < (int)grid.w - 1; x++)
         {
-            if(solveTile(copy, x, y))
+            solution = solveTile(copy, x, y, solution);
+
+            if(solution != Marching::Solution::None)
             {
                 const glm::uvec2 &offset = offsets[getIndex(copy, x, y)];
                 const Grid<bool> shapeGrid = selectShape(copy, x + offset.x, y + offset.y);

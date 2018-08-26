@@ -79,8 +79,6 @@ int main(int argc, char *argv[])
                             glLoadIdentity();
 
                             bool finished = false;
-                            const Uint8 *keyboardState = SDL_GetKeyboardState(nullptr);
-
                             Grid<bool> grid(15, 15);
                             std::vector<Shape> shapes;
                             
