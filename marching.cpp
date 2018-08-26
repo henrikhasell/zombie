@@ -201,7 +201,6 @@ std::vector<Shape> Marching::solveGrid(const Grid<bool> &grid)
                 const glm::uvec2 &offset = offsets[getIndex(copy, x, y)];
                 const Grid<bool> shapeGrid = selectShape(copy, x + offset.x, y + offset.y);
                 const Shape shape = Marching::solveShape(shapeGrid, x, y);
-                std::cout << "New shape with " << shape.points.size() << " indices." << std::endl;
                 result.emplace_back(shape);
             }
         }

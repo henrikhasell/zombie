@@ -3,6 +3,19 @@
 #include <GL/glew.h>
 #include <SDL2/SDL.h>
 
+void UpdateProjection(const Camera &camera)
+{
+    glViewport(0, 0, camera.w, camera.h);
+
+    const float w = camera.w / camera.zoom;
+    const float h = camera.h / camera.zoom;
+
+    glMatrixMode(GL_PROJECTION);
+    glOrtho(camera.x, camera.x + w, camera.y + h, camera.y, -1.0, 1.0);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+}
+
 static void _drawSquare(GLfloat x, GLfloat y, GLfloat w, GLfloat h)
 {
     glColor3f(0.5f, 0.5f, 0.5f);
@@ -40,15 +53,18 @@ void RenderGrid(const Grid<bool> &grid)
     }
 }
 
-void RenderCursor(const Grid<bool> &grid)
+void RenderCursor(const Grid<bool> &grid, const Camera &camera)
 {
     int x;
     int y;
 
     SDL_GetMouseState(&x, &y);
 
-    x /= TILE_W;
-    y /= TILE_H;
+    x += camera.x * camera.zoom;
+    y += camera.y * camera.zoom;
+
+    x /= (TILE_W * camera.zoom);
+    y /= (TILE_H * camera.zoom);
 
     if(x >= (int)grid.w || y >= (int)grid.h)
     {
@@ -90,4 +106,15 @@ void RenderShape(const std::vector<glm::vec2> &shape)
         glVertex2f(point.x, point.y);
     }
     glEnd();
+}
+
+void RenderPlayer(const b2Body &body)
+{
+    const b2Vec2 &position = body.GetPosition();
+    const float32 rotation = body.GetAngle();
+    glPushMatrix();
+    glTranslatef(position.x, position.y, 0.0f);
+    glRotatef(rotation, 0.0f, 0.0f, 1.0f);
+    _drawSquare(-0.5f, -0.5f, 1.0f, 1.0f);
+    glPopMatrix();
 }

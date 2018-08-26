@@ -5,6 +5,7 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 #include "configuration.hpp"
+#include "game.hpp"
 #include "grid.hpp"
 #include "marching.hpp"
 #include "render.hpp"
@@ -72,16 +73,21 @@ int main(int argc, char *argv[])
 
                         if(glewStatus == GLEW_OK)
                         {
-                            glViewport(0, 0, WINDOW_W, WINDOW_H);
-                            glMatrixMode(GL_PROJECTION);
-                            glOrtho(0, WINDOW_W, WINDOW_H, 0, -1.0, 1.0);
-                            glMatrixMode(GL_MODELVIEW);
-                            glLoadIdentity();
+                            Camera camera;
+                            camera.x = -2.0f;
+                            camera.y = -2.0f;
+                            camera.w = WINDOW_W;
+                            camera.h = WINDOW_H;
+                            camera.zoom = 20;
+                            UpdateProjection(camera);
 
-                            bool finished = false;
-                            Grid<bool> grid(15, 15);
                             std::vector<Shape> shapes;
-                            
+                            Grid<bool> grid(15, 15);
+                            Game game;
+
+                            Uint32 lastTimeStep = SDL_GetTicks();                            
+                            bool finished = false;
+
                             while(!finished)
                             {
                                 SDL_Event event;
@@ -100,8 +106,8 @@ int main(int argc, char *argv[])
                                         case SDL_MOUSEBUTTONDOWN:
                                             if(event.button.button == SDL_BUTTON_LEFT && event.button.state == SDL_PRESSED)
                                             {
-                                                size_t x = event.button.x / TILE_W;
-                                                size_t y = event.button.y / TILE_H;
+                                                size_t x = (event.button.x + camera.x * camera.zoom) / (TILE_W * camera.zoom);
+                                                size_t y = (event.button.y + camera.y * camera.zoom) / (TILE_H * camera.zoom);
 
                                                 if(x < grid.w && y < grid.h)
                                                 {
@@ -114,9 +120,15 @@ int main(int argc, char *argv[])
                                     }
                                 }
 
+                                for(Uint32 time = SDL_GetTicks(); lastTimeStep - time > TIME_STEP; lastTimeStep += TIME_STEP)
+                                {
+                                    game.step();
+                                }
+
                                 glClear(GL_COLOR_BUFFER_BIT);
                                 RenderGrid(grid);
-                                RenderCursor(grid);
+                                RenderCursor(grid, camera);
+                                RenderPlayer(*game.player);
                                 for(const Shape &shape : shapes)
                                 {
                                     RenderShape(shape.points);

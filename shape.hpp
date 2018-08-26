@@ -7,16 +7,6 @@
 
 struct Shape
 {
-    Shape()
-    {
-        std::cout << "Creating shape." << std::endl;
-    }
-
-    ~Shape()
-    {
-        std::cout << "Destroying shape." << std::endl;
-    }
-
     std::vector<glm::vec2> points;
 };
 
