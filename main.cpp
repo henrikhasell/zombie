@@ -85,6 +85,7 @@ int main(int argc, char *argv[])
                             Grid<bool> grid(15, 15);
                             Game game;
 
+                            const Uint8 *keyboardState = SDL_GetKeyboardState(nullptr);
                             Uint32 lastTimeStep = SDL_GetTicks();                            
                             bool finished = false;
 
@@ -113,7 +114,8 @@ int main(int argc, char *argv[])
                                                 {
                                                     bool &tile = grid.getTile(x, y);
                                                     tile = !tile;
-                                                    shapes = Marching::solveGrid(grid);
+                                                    //shapes = Marching::solveGrid(grid);
+                                                    game.buildWalls(grid);
                                                 }
                                             }
                                         }
@@ -122,6 +124,7 @@ int main(int argc, char *argv[])
 
                                 for(Uint32 time = SDL_GetTicks(); lastTimeStep - time > TIME_STEP; lastTimeStep += TIME_STEP)
                                 {
+                                    game.handleInput(keyboardState);
                                     game.step();
                                 }
 

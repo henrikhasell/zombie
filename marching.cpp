@@ -174,8 +174,9 @@ Shape Marching::solveShape(const Grid<bool> &grid, size_t x, size_t y)
                 break;
         }
 
-        if((current_x == x && current_y == y) || solution == Marching::Solution::None)
+        if(current_x == x && current_y == y)
         {
+            result.points.emplace_back(result.points[0]);
             break;
         }
     }

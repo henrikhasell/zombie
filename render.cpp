@@ -1,19 +1,22 @@
 #include "render.hpp"
 #include "configuration.hpp"
+#include <cmath>
 #include <GL/glew.h>
 #include <SDL2/SDL.h>
 
-void UpdateProjection(const Camera &camera)
+static void _drawCircle(GLfloat x, GLfloat y, GLfloat r)
 {
-    glViewport(0, 0, camera.w, camera.h);
-
-    const float w = camera.w / camera.zoom;
-    const float h = camera.h / camera.zoom;
-
-    glMatrixMode(GL_PROJECTION);
-    glOrtho(camera.x, camera.x + w, camera.y + h, camera.y, -1.0, 1.0);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
+    glColor3f(1.0f, 0.0f, 1.0f);
+    glBegin(GL_LINE_LOOP);
+    for(GLfloat i = 0.0f; i < M_PI * 2; i += 0.2f)
+    {
+        glVertex2f(x + cosf(i) * r, y + sinf(i) * r);
+    }
+    glEnd();
+    glBegin(GL_LINES);
+    glVertex2f(x, y);
+    glVertex2f(x, y - r);
+    glEnd();
 }
 
 static void _drawSquare(GLfloat x, GLfloat y, GLfloat w, GLfloat h)
@@ -36,6 +39,19 @@ static void _drawFilledSquare(GLfloat x, GLfloat y, GLfloat w, GLfloat h)
     glVertex2f(x, y+h);
     glVertex2f(x+w, y+h);
     glEnd();
+}
+
+void UpdateProjection(const Camera &camera)
+{
+    glViewport(0, 0, camera.w, camera.h);
+
+    const float w = camera.w / camera.zoom;
+    const float h = camera.h / camera.zoom;
+
+    glMatrixMode(GL_PROJECTION);
+    glOrtho(camera.x, camera.x + w, camera.y + h, camera.y, -1.0, 1.0);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
 }
 
 void RenderGrid(const Grid<bool> &grid)
@@ -90,7 +106,7 @@ void RenderShape(const std::vector<glm::vec2> &shape)
 {
     glColor3f(1.0f, 0.0f, 0.0f);
 
-    glBegin(GL_LINE_LOOP);
+    glBegin(GL_LINE_STRIP);
     for(const glm::vec2 &point : shape)
     {
         glVertex2f(point.x, point.y);
@@ -114,7 +130,7 @@ void RenderPlayer(const b2Body &body)
     const float32 rotation = body.GetAngle();
     glPushMatrix();
     glTranslatef(position.x, position.y, 0.0f);
-    glRotatef(rotation, 0.0f, 0.0f, 1.0f);
-    _drawSquare(-0.5f, -0.5f, 1.0f, 1.0f);
+    glRotatef(rotation * 57.2958f, 0.0f, 0.0f, 1.0f);
+    _drawCircle(0.0f, 0.0f, 1.0f);
     glPopMatrix();
 }
