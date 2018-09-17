@@ -1,1 +1,5 @@
+.directory
+.idea
+cmake-build-debug
+.vscode
 a.out

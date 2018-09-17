@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
                             UpdateProjection(camera);
 
                             std::vector<Shape> shapes;
-                            Grid<bool> grid(15, 15);
+                            Grid<bool> grid(5, 5);
                             Game game;
 
                             const Uint8 *keyboardState = SDL_GetKeyboardState(nullptr);
@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
                                                 {
                                                     bool &tile = grid.getTile(x, y);
                                                     tile = !tile;
-                                                    //shapes = Marching::solveGrid(grid);
+                                                    shapes = Marching::solveGrid(grid);
                                                     game.buildWalls(grid);
                                                 }
                                             }
@@ -132,10 +132,17 @@ int main(int argc, char *argv[])
                                 RenderGrid(grid);
                                 RenderCursor(grid, camera);
                                 RenderPlayer(*game.player);
+
                                 for(const Shape &shape : shapes)
                                 {
                                     RenderShape(shape.points);
                                 }
+                                
+                                for(b2Body *bullet : game.bullets)
+                                {
+                                    RenderBullet(*bullet);
+                                }
+                                
                                 SDL_GL_SwapWindow(window);
 
                                 SDL_Delay(20);

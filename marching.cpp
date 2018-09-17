@@ -41,58 +41,51 @@ static const glm::uvec2 offsets[16] = {
     { 0, 0 }
 };
 
-static bool safeGridFetch(const Grid<bool> &grid, size_t x, size_t y)
+static bool coordInBounds(const Grid<bool> &grid, size_t x, size_t y)
 {
-    if(x < grid.w && y < grid.h)
-    {
-        return grid.getTile(x, y);
-    }
-
-    return false;
+    return x < grid.w && y < grid.h;
 }
 
-static Grid<bool> selectShape(Grid<bool> &grid, size_t x, size_t y)
+static bool safeGetTile(const Grid<bool> &grid, size_t x, size_t y)
 {
-    Grid<bool> result(grid.w, grid.h);
+    return coordInBounds(grid, x, y) && grid.getTile(x, y);
+}
 
-    std::queue<glm::uvec2> openSet;
+static void fillGrid(Grid<bool> &grid, size_t x, size_t y)
+{
+    std::queue<glm::uvec2> open_set;
+    open_set.emplace(x, y);
 
-    openSet.emplace(x, y);
-
-    while(!openSet.empty())
+    while(!open_set.empty())
     {
-        const glm::uvec2 &current = openSet.front();
+        const glm::uvec2 &current = open_set.front();
 
-        result.getTile(current.x, current.y) = true;
         grid.getTile(current.x, current.y) = false;
 
         const glm::uvec2 neighbours[] = {
-            { current.x - 1, current.y },
-            { current.x + 1, current.y },
-            { current.x, current.y - 1 },
-            { current.x, current.y + 1 }
+                { current.x - 1, current.y },
+                { current.x + 1, current.y },
+                { current.x, current.y - 1 },
+                { current.x, current.y + 1 }
         };
 
         for(const glm::uvec2 &neighbour : neighbours)
         {
-            if(safeGridFetch(grid, neighbour.x, neighbour.y))
+            if(safeGetTile(grid, neighbour.x, neighbour.y))
             {
-                openSet.emplace(neighbour.x, neighbour.y);
+                open_set.emplace(neighbour.x, neighbour.y);
             }
         }
-
-        openSet.pop();
+        open_set.pop();
     }
-
-    return result;
 }
 
 static size_t getIndex(const Grid<bool> &grid, size_t x, size_t y)
 {
-    const bool topLeft = safeGridFetch(grid, x, y);
-    const bool topRight = safeGridFetch(grid, x + 1, y);
-    const bool bottomLeft = safeGridFetch(grid, x, y + 1);
-    const bool bottomRight = safeGridFetch(grid, x + 1, y + 1);
+    const bool topLeft = safeGetTile(grid, x, y);
+    const bool topRight = safeGetTile(grid, x + 1, y);
+    const bool bottomLeft = safeGetTile(grid, x, y + 1);
+    const bool bottomRight = safeGetTile(grid, x + 1, y + 1);
 
     size_t index = 0;
 
@@ -200,8 +193,8 @@ std::vector<Shape> Marching::solveGrid(const Grid<bool> &grid)
             if(solution != Marching::Solution::None)
             {
                 const glm::uvec2 &offset = offsets[getIndex(copy, x, y)];
-                const Grid<bool> shapeGrid = selectShape(copy, x + offset.x, y + offset.y);
-                const Shape shape = Marching::solveShape(shapeGrid, x, y);
+                const Shape shape = Marching::solveShape(copy, x, y);
+                fillGrid(copy, (size_t)x+1, (size_t)y+1);
                 result.emplace_back(shape);
             }
         }

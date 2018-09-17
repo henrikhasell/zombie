@@ -6,7 +6,6 @@
 
 static void _drawCircle(GLfloat x, GLfloat y, GLfloat r)
 {
-    glColor3f(1.0f, 0.0f, 1.0f);
     glBegin(GL_LINE_LOOP);
     for(GLfloat i = 0.0f; i < M_PI * 2; i += 0.2f)
     {
@@ -21,7 +20,7 @@ static void _drawCircle(GLfloat x, GLfloat y, GLfloat r)
 
 static void _drawSquare(GLfloat x, GLfloat y, GLfloat w, GLfloat h)
 {
-    glColor3f(0.5f, 0.5f, 0.5f);
+    glColor3f(0.2f, 0.2f, 0.2f);
     glBegin(GL_LINE_LOOP);
     glVertex2f(x, y);
     glVertex2f(x+w, y);
@@ -128,9 +127,22 @@ void RenderPlayer(const b2Body &body)
 {
     const b2Vec2 &position = body.GetPosition();
     const float32 rotation = body.GetAngle();
+    glColor3f(1.0f, 1.0f, 1.0f);
     glPushMatrix();
     glTranslatef(position.x, position.y, 0.0f);
     glRotatef(rotation * 57.2958f, 0.0f, 0.0f, 1.0f);
     _drawCircle(0.0f, 0.0f, 1.0f);
+    glPopMatrix();
+}
+
+void RenderBullet(const b2Body &body)
+{
+    const b2Vec2 &position = body.GetPosition();
+    const float32 rotation = body.GetAngle();
+    glColor3f(1.0f, 0.0f, 0.0f);
+    glPushMatrix();
+    glTranslatef(position.x, position.y, 0.0f);
+    glRotatef(rotation * 57.2958f, 0.0f, 0.0f, 1.0f);
+    _drawCircle(0.0f, 0.0f, 0.25f);
     glPopMatrix();
 }
