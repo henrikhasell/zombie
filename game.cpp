@@ -49,6 +49,23 @@ void Game::handleInput(const Uint8 *keyboardState)
     velocity.y *= PLAYER_SPEED;
 
     player->SetLinearVelocity(velocity);
+
+    if(keyboardState[SDL_SCANCODE_UP])
+    {
+        camera.y -= 1.0f;
+    }
+    if(keyboardState[SDL_SCANCODE_DOWN])
+    {
+        camera.y += 1.0f;
+    }
+    if(keyboardState[SDL_SCANCODE_LEFT])
+    {
+        camera.x -= 1.0f;
+    }
+    if(keyboardState[SDL_SCANCODE_RIGHT])
+    {
+        camera.x += 1.0f;
+    }
 }
 
 void Game::step()
@@ -68,6 +85,8 @@ void Game::step()
     delete_list.clear();
     ((Player*)player->GetUserData())->step();
     world.Step(1.0f/60.0f, 6, 2);
+    const b2Vec2 playerPosition = player->GetPosition();
+    camera.lock(playerPosition.x, playerPosition.y);
 }
 
 void Game::buildWalls(const Grid<bool> &tilemap)

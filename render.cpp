@@ -48,6 +48,7 @@ void UpdateProjection(const Camera &camera)
     const float h = camera.h / camera.zoom;
 
     glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
     glOrtho(camera.x, camera.x + w, camera.y + h, camera.y, -1.0, 1.0);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();

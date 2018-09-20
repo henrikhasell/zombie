@@ -3,6 +3,8 @@
 
 struct Camera
 {
+    void lock(float x, float y, float margin=0.45f);
+
     float x;
     float y;
 

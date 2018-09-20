@@ -11,7 +11,15 @@ public:
 
     Grid(size_t w, size_t h) : w(w), h(h)
     {
-        data = new T[w * h]();
+        data = new T[w * h];
+    }
+
+    Grid(size_t w, size_t h, const T *data) : Grid(w, h)
+    {
+        for(size_t i = 0; i < w * h; i++)
+        {
+            this->data[i] = data[i];
+        }
     }
 
     Grid(const Grid &grid) : Grid(grid.w, grid.h)

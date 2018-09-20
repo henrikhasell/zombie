@@ -194,7 +194,7 @@ std::vector<Shape> Marching::solveGrid(const Grid<bool> &grid)
             {
                 const glm::uvec2 &offset = offsets[getIndex(copy, x, y)];
                 const Shape shape = Marching::solveShape(copy, x, y);
-                fillGrid(copy, (size_t)x+1, (size_t)y+1);
+                //fillGrid(copy, (size_t)x+1, (size_t)y+1);
                 result.emplace_back(shape);
             }
         }

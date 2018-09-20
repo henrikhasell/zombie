@@ -16,6 +16,29 @@
 
 #define IMG_INIT_FLAGS (IMG_INIT_PNG | IMG_INIT_JPG)
 
+const bool hardcoded_map[] = {
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+};
+
 int main(int argc, char *argv[])
 {
     SDL_version version;
@@ -73,17 +96,18 @@ int main(int argc, char *argv[])
 
                         if(glewStatus == GLEW_OK)
                         {
-                            Camera camera;
-                            camera.x = -2.0f;
-                            camera.y = -2.0f;
-                            camera.w = WINDOW_W;
-                            camera.h = WINDOW_H;
-                            camera.zoom = 20;
-                            UpdateProjection(camera);
-
                             std::vector<Shape> shapes;
-                            Grid<bool> grid(5, 5);
+                            Grid<bool> grid(20, 20, hardcoded_map);
+
                             Game game;
+
+                            game.camera.x = -2.0f;
+                            game.camera.y = -2.0f;
+                            game.camera.w = WINDOW_W;
+                            game.camera.h = WINDOW_H;
+                            game.camera.zoom = 20;
+
+                            UpdateProjection(game.camera);
 
                             const Uint8 *keyboardState = SDL_GetKeyboardState(nullptr);
                             Uint32 lastTimeStep = SDL_GetTicks();                            
@@ -107,8 +131,8 @@ int main(int argc, char *argv[])
                                         case SDL_MOUSEBUTTONDOWN:
                                             if(event.button.button == SDL_BUTTON_LEFT && event.button.state == SDL_PRESSED)
                                             {
-                                                size_t x = (event.button.x + camera.x * camera.zoom) / (TILE_W * camera.zoom);
-                                                size_t y = (event.button.y + camera.y * camera.zoom) / (TILE_H * camera.zoom);
+                                                size_t x = (event.button.x + game.camera.x * game.camera.zoom) / (TILE_W * game.camera.zoom);
+                                                size_t y = (event.button.y + game.camera.y * game.camera.zoom) / (TILE_H * game.camera.zoom);
 
                                                 if(x < grid.w && y < grid.h)
                                                 {
@@ -129,15 +153,16 @@ int main(int argc, char *argv[])
                                 }
 
                                 glClear(GL_COLOR_BUFFER_BIT);
+                                UpdateProjection(game.camera);
                                 RenderGrid(grid);
-                                RenderCursor(grid, camera);
+                                RenderCursor(grid, game.camera);
                                 RenderPlayer(*game.player);
 
                                 for(const Shape &shape : shapes)
                                 {
                                     RenderShape(shape.points);
                                 }
-                                
+
                                 for(b2Body *bullet : game.bullets)
                                 {
                                     RenderBullet(*bullet);

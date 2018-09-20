@@ -3,15 +3,17 @@
 
 #include <Box2D/Box2D.h>
 #include <SDL2/SDL.h>
+#include "camera.hpp"
 #include "configuration.hpp"
-#include "marching.hpp"
 #include "contact.hpp"
+#include "marching.hpp"
 #include "shape.hpp"
 #include "grid.hpp"
 
 class Game
 {
 public:
+    Camera camera;
     ContactListener contactListener;
     std::vector<b2Body*> delete_list;
     std::vector<b2Body*> bullets;
