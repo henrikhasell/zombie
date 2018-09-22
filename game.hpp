@@ -31,7 +31,10 @@ protected:
     void attachBox(b2Body *body, const b2Vec2 &size);
     void attachCircle(b2Body *body, float32 radius);
     b2Body *createPlayerBody(const b2Vec2 &position);
-    b2Body *createBullet(const b2Vec2 &position, float32 angle);
+    b2Body *createBullet(
+        const b2Vec2 &position,
+        const b2Vec2 &velocity,
+        float32 angle);
 };
 
 #endif

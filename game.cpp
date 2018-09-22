@@ -123,20 +123,20 @@ void Game::shootBullet(b2Body *player)
     }
     else
     {
-        playerData->weaponCooldown = 15;
+        playerData->weaponCooldown = 10;
     }
 
     float32 rotation = player->GetAngle();
 
-    b2Vec2 velocity;
-    velocity.x = +sinf(rotation);
-    velocity.y = -cosf(rotation);
-
     b2Vec2 startingPosition = player->GetPosition();
-    startingPosition.x += velocity.x * 1.4f;
-    startingPosition.y += velocity.y * 1.4f;
+    startingPosition.x += sinf(rotation) * 1.5f;
+    startingPosition.y -= cosf(rotation) * 1.5f;
 
-    createBullet(startingPosition, rotation);
+    b2Vec2 velocity = player->GetLinearVelocity();
+    velocity.x += sinf(rotation) * 30.0f;
+    velocity.y -= cosf(rotation) * 30.0f;
+
+    createBullet(startingPosition, velocity, rotation);
 }
 
 void Game::attachBox(b2Body *body, const b2Vec2 &size)
@@ -178,15 +178,17 @@ b2Body *Game::createPlayerBody(const b2Vec2 &position)
     return body;
 }
 
-b2Body *Game::createBullet(const b2Vec2 &position, float32 angle)
+b2Body *Game::createBullet(
+        const b2Vec2 &position,
+        const b2Vec2 &velocity,
+        float32 angle)
 {
     b2BodyDef bodyDefinition;
     bodyDefinition.type = b2_dynamicBody;
     bodyDefinition.position = position;
     bodyDefinition.fixedRotation = true;
     bodyDefinition.angle = angle;
-    bodyDefinition.linearVelocity.x = +sinf(angle) * 20.0f;
-    bodyDefinition.linearVelocity.y = -cosf(angle) * 20.0f;
+    bodyDefinition.linearVelocity = velocity;
 
     b2Body *body = world.CreateBody(&bodyDefinition);
     body->SetUserData(new Bullet(this, body));
