@@ -7,17 +7,25 @@
 #include "configuration.hpp"
 #include "contact.hpp"
 #include "marching.hpp"
+#include "navigation.hpp"
 #include "shape.hpp"
 #include "grid.hpp"
+
+using namespace Navigation;
 
 class Game
 {
 public:
     Camera camera;
+    Grid <bool> grid;
     ContactListener contactListener;
+    PathBuilder pathBuilder;
+
     std::vector<b2Body*> delete_list;
     std::vector<b2Body*> bullets;
     std::vector<b2Body*> walls;
+    std::vector<b2Body*> zombies;
+
     b2World world;
     b2Body *player;
 
@@ -25,12 +33,14 @@ public:
 
     void handleInput(const Uint8 *keyboardState);
     void step();
-    void buildWalls(const Grid<bool> &tilemap);
+    void buildWalls();
     void shootBullet(b2Body *player);
+    bool calculatePath(const b2Vec2 &start, const b2Vec2 &finish, std::vector<b2Vec2> &path);
 protected:
     void attachBox(b2Body *body, const b2Vec2 &size);
     void attachCircle(b2Body *body, float32 radius);
-    b2Body *createPlayerBody(const b2Vec2 &position);
+    b2Body *createPlayer(const b2Vec2 &position);
+    b2Body *createZombie(const b2Vec2 &position);
     b2Body *createBullet(
         const b2Vec2 &position,
         const b2Vec2 &velocity,

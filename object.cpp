@@ -11,6 +11,6 @@ void PhysicsObject::remove()
     if(!deleted)
     {
         game->delete_list.emplace_back(body);
+        deleted = true;
     }
-    deleted = true;
 }

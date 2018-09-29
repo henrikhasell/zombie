@@ -33,11 +33,16 @@ static void _drawFilledSquare(GLfloat x, GLfloat y, GLfloat w, GLfloat h)
 {
     glColor3f(0.2f, 0.2f, 0.2f);
     glBegin(GL_TRIANGLE_STRIP);
-    glVertex2f(x, y);
     glVertex2f(x+w, y);
-    glVertex2f(x, y+h);
+    glVertex2f(x, y);
     glVertex2f(x+w, y+h);
+    glVertex2f(x, y+h);
     glEnd();
+}
+
+static void _drawHitpointsBar(GLfloat x, GLfloat y, GLfloat percentage)
+{
+
 }
 
 void UpdateProjection(const Camera &camera)
@@ -146,4 +151,38 @@ void RenderBullet(const b2Body &body)
     glRotatef(rotation * 57.2958f, 0.0f, 0.0f, 1.0f);
     _drawCircle(0.0f, 0.0f, 0.25f);
     glPopMatrix();
+}
+
+void RenderZombie(const b2Body &body)
+{
+    constexpr float w = 2.0f;
+    RenderPlayer(body);
+    const b2Vec2 &position = body.GetPosition();
+    Zombie *zombie = (Zombie*)body.GetUserData();
+
+    glColor3f(1.0f, 0.0f, 0.0f);
+    glPushMatrix();
+    glTranslatef(position.x - w / 2.0f, position.y - 2.05f, 0.0f);
+    glScalef(zombie->hitpoints / zombie->max_hitpoints, 1.0f, 1.0f);
+    glBegin(GL_TRIANGLE_STRIP);
+    glVertex2f(w, 0.0f);
+    glVertex2f(0.0f, 0.0f);
+    glVertex2f(w, 0.5f);
+    glVertex2f(0.0f, 0.5f);
+    glEnd();
+    glPopMatrix();
+    glColor3f(1.0f, 1.0f, 1.0f);
+    glBegin(GL_LINE_LOOP);
+    glVertex2f(position.x - w / 2.0f, position.y - 2.05f);
+    glVertex2f(position.x + w / 2.0f, position.y - 2.05f);
+    glVertex2f(position.x + w / 2.0f, position.y - 1.55f);
+    glVertex2f(position.x - w / 2.0f, position.y - 1.55f);
+    glEnd();
+    glBegin(GL_POINTS);
+    glColor3f(0.0f, 1.0f, 0.0f);
+    for(const b2Vec2 &point : zombie->path)
+    {
+        glVertex2f(point.x, point.y);
+    }
+    glEnd();
 }

@@ -2,10 +2,35 @@
 #include "bullet.hpp"
 #include "player.hpp"
 
-Game::Game() : world(b2Vec2_zero)
+const bool hardcoded_map[] = {
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+};
+
+Game::Game() : grid(20, 20, hardcoded_map), world(b2Vec2_zero), pathBuilder(grid)
 {
     world.SetContactListener(&contactListener);
-    player = createPlayerBody(b2Vec2(10.0f, 10.0f));
+    player = createPlayer(b2Vec2(10.0f, 10.0f));
+    zombies.emplace_back(createZombie(b2Vec2(26.0f, 41.0f)));
+    buildWalls();
 }
 
 
@@ -83,13 +108,20 @@ void Game::step()
         world.DestroyBody(body);
     }
     delete_list.clear();
+
     ((Player*)player->GetUserData())->step();
+
+    for(b2Body *zombie : zombies)
+    {
+        ((Zombie*)zombie->GetUserData())->step();
+    }
+
     world.Step(1.0f/60.0f, 6, 2);
     const b2Vec2 playerPosition = player->GetPosition();
     camera.lock(playerPosition.x, playerPosition.y);
 }
 
-void Game::buildWalls(const Grid<bool> &tilemap)
+void Game::buildWalls()
 {
     for(b2Body *wall : walls)
     {
@@ -97,7 +129,7 @@ void Game::buildWalls(const Grid<bool> &tilemap)
     }
     walls.clear();
 
-    std::vector<Shape> shapes = Marching::solveGrid(tilemap);
+    std::vector<Shape> shapes = Marching::solveGrid(grid);
     for(const Shape &shape : shapes)
     {
         b2ChainShape chainShape;
@@ -166,7 +198,7 @@ void Game::attachCircle(b2Body *body, float32 radius)
     body->CreateFixture(&fixtureDefinition);
 }
 
-b2Body *Game::createPlayerBody(const b2Vec2 &position)
+b2Body *Game::createPlayer(const b2Vec2 &position)
 {
     b2BodyDef bodyDefinition;
     bodyDefinition.type = b2_dynamicBody;
@@ -174,6 +206,18 @@ b2Body *Game::createPlayerBody(const b2Vec2 &position)
     bodyDefinition.fixedRotation = true;
     b2Body *body = world.CreateBody(&bodyDefinition);
     body->SetUserData(new Player(this, body));
+    attachCircle(body, 1.0f);
+    return body;
+}
+
+b2Body *Game::createZombie(const b2Vec2 &position)
+{
+    b2BodyDef bodyDefinition;
+    bodyDefinition.type = b2_dynamicBody;
+    bodyDefinition.position = position;
+    bodyDefinition.fixedRotation = true;
+    b2Body *body = world.CreateBody(&bodyDefinition);
+    body->SetUserData(new Zombie(this, body));
     attachCircle(body, 1.0f);
     return body;
 }
@@ -194,4 +238,30 @@ b2Body *Game::createBullet(
     body->SetUserData(new Bullet(this, body));
     attachCircle(body, 0.25f);
     return body;
+}
+
+bool Game::calculatePath(const b2Vec2 &start, const b2Vec2 &finish, std::vector<b2Vec2> &path)
+{
+    const int sx = (int)start.x / TILE_W;
+    const int sy = (int)start.y / TILE_H;
+
+    const int fx = (int)finish.x / TILE_W;
+    const int fy = (int)finish.y / TILE_H;
+
+    std::vector<const Tile *> tile_path;
+
+    bool result = pathBuilder.calculatePath(
+        pathBuilder.getTile(sx, sy),
+        pathBuilder.getTile(fx, fy),
+        tile_path);
+
+    if(result)
+    {
+        for(const Tile *tile : tile_path)
+        {
+            path.push_back(b2Vec2(TILE_W * tile->x + (float)TILE_W / 2, TILE_H * tile->y + (float)TILE_H / 2));
+        }
+    }
+
+    return result;
 }

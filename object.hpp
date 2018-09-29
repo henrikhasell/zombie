@@ -2,6 +2,7 @@
 #define OBJECT_HPP
 
 #include <Box2D/Box2D.h>
+#include <iostream>
 
 class Game;
 
@@ -12,6 +13,7 @@ public:
     virtual ~PhysicsObject() = default;
     virtual void onBeginContact(b2Body *other) = 0;
     virtual void onEndContact(b2Body *other) = 0;
+    virtual void damage(float amount) { std::cout << "Damaging " << this << " by " << amount << std::endl; }
     void remove();
 protected:
     Game *game;

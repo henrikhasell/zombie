@@ -20,4 +20,6 @@ void RenderPlayer(const b2Body &body);
 
 void RenderBullet(const b2Body &body);
 
+void RenderZombie(const b2Body &body);
+
 #endif

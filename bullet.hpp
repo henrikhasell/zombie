@@ -23,6 +23,13 @@ struct Bullet : public PhysicsObject
 
     virtual void onBeginContact(b2Body *other)
     {
+        PhysicsObject *physicsObject = (PhysicsObject*)other->GetUserData();
+
+        if(physicsObject)
+        {
+            physicsObject->damage(10.0f);
+        }
+
         remove();
     }
 

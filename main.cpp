@@ -16,29 +16,6 @@
 
 #define IMG_INIT_FLAGS (IMG_INIT_PNG | IMG_INIT_JPG)
 
-const bool hardcoded_map[] = {
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
-};
-
 int main(int argc, char *argv[])
 {
     SDL_version version;
@@ -96,8 +73,8 @@ int main(int argc, char *argv[])
 
                         if(glewStatus == GLEW_OK)
                         {
+                            glEnable(GL_CULL_FACE);
                             std::vector<Shape> shapes;
-                            Grid<bool> grid(20, 20, hardcoded_map);
 
                             Game game;
 
@@ -105,7 +82,7 @@ int main(int argc, char *argv[])
                             game.camera.y = -2.0f;
                             game.camera.w = WINDOW_W;
                             game.camera.h = WINDOW_H;
-                            game.camera.zoom = 20;
+                            game.camera.zoom = 10;
 
                             UpdateProjection(game.camera);
 
@@ -134,12 +111,12 @@ int main(int argc, char *argv[])
                                                 size_t x = (event.button.x + game.camera.x * game.camera.zoom) / (TILE_W * game.camera.zoom);
                                                 size_t y = (event.button.y + game.camera.y * game.camera.zoom) / (TILE_H * game.camera.zoom);
 
-                                                if(x < grid.w && y < grid.h)
+                                                if(x < game.grid.w && y < game.grid.h)
                                                 {
-                                                    bool &tile = grid.getTile(x, y);
+                                                    bool &tile = game.grid.getTile(x, y);
                                                     tile = !tile;
-                                                    shapes = Marching::solveGrid(grid);
-                                                    game.buildWalls(grid);
+                                                    shapes = Marching::solveGrid(game.grid);
+                                                    game.buildWalls();
                                                 }
                                             }
                                         }
@@ -154,8 +131,8 @@ int main(int argc, char *argv[])
 
                                 glClear(GL_COLOR_BUFFER_BIT);
                                 UpdateProjection(game.camera);
-                                RenderGrid(grid);
-                                RenderCursor(grid, game.camera);
+                                RenderGrid(game.grid);
+                                RenderCursor(game.grid, game.camera);
                                 RenderPlayer(*game.player);
 
                                 for(const Shape &shape : shapes)
@@ -166,6 +143,11 @@ int main(int argc, char *argv[])
                                 for(b2Body *bullet : game.bullets)
                                 {
                                     RenderBullet(*bullet);
+                                }
+                                glColor3f(0.0f, 1.0f, 0.0f);
+                                for(b2Body *zombie : game.zombies)
+                                {
+                                    RenderZombie(*zombie);
                                 }
                                 
                                 SDL_GL_SwapWindow(window);

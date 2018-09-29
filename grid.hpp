@@ -6,8 +6,8 @@
 template<class T> class Grid
 {
 public:
-    const size_t w;
-    const size_t h;
+    const int w;
+    const int h;
 
     Grid(size_t w, size_t h) : w(w), h(h)
     {
@@ -35,7 +35,7 @@ public:
         delete[] data;
     }
 
-    T &getTile(size_t x, size_t y) const
+    T &getTile(int x, int y) const
     {
         return data[x + y * w];
     }

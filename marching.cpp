@@ -41,12 +41,12 @@ static const glm::uvec2 offsets[16] = {
     { 0, 0 }
 };
 
-static bool coordInBounds(const Grid<bool> &grid, size_t x, size_t y)
+static bool coordInBounds(const Grid<bool> &grid, int x, int y)
 {
-    return x < grid.w && y < grid.h;
+    return x >= 0 && y >= 0 && x < grid.w && y < grid.h;
 }
 
-static bool safeGetTile(const Grid<bool> &grid, size_t x, size_t y)
+static bool safeGetTile(const Grid<bool> &grid, int x, int y)
 {
     return coordInBounds(grid, x, y) && grid.getTile(x, y);
 }
@@ -80,7 +80,7 @@ static void fillGrid(Grid<bool> &grid, size_t x, size_t y)
     }
 }
 
-static size_t getIndex(const Grid<bool> &grid, size_t x, size_t y)
+static size_t getIndex(const Grid<bool> &grid, int x, int y)
 {
     const bool topLeft = safeGetTile(grid, x, y);
     const bool topRight = safeGetTile(grid, x + 1, y);
@@ -112,7 +112,7 @@ static size_t getIndex(const Grid<bool> &grid, size_t x, size_t y)
     return index;
 }
 
-static Marching::Solution solveTile(const Grid<bool> &grid, size_t x, size_t y, Marching::Solution previousSolution)
+static Marching::Solution solveTile(const Grid<bool> &grid, int x, int y, Marching::Solution previousSolution)
 {
     size_t index = getIndex(grid, x, y);
 
@@ -129,12 +129,12 @@ static Marching::Solution solveTile(const Grid<bool> &grid, size_t x, size_t y, 
     return solutions[index];
 }
 
-Shape Marching::solveShape(const Grid<bool> &grid, size_t x, size_t y)
+Shape Marching::solveShape(const Grid<bool> &grid, int x, int y)
 {
     Shape result;
 
-    size_t current_x = x;
-    size_t current_y = y;
+    int current_x = x;
+    int current_y = y;
     
     Marching::Solution previousSolution = Marching::Solution::None;
 
@@ -184,9 +184,9 @@ std::vector<Shape> Marching::solveGrid(const Grid<bool> &grid)
 
     Marching::Solution solution = Marching::Solution::None;
 
-    for(int y = -1; y < (int)grid.h - 1; y++)
+    for(int y = 0; y < (int)grid.h - 1; y++)
     {
-        for(int x = -1; x < (int)grid.w - 1; x++)
+        for(int x = 0; x < (int)grid.w - 1; x++)
         {
             solution = solveTile(copy, x, y, solution);
 
@@ -194,7 +194,7 @@ std::vector<Shape> Marching::solveGrid(const Grid<bool> &grid)
             {
                 const glm::uvec2 &offset = offsets[getIndex(copy, x, y)];
                 const Shape shape = Marching::solveShape(copy, x, y);
-                //fillGrid(copy, (size_t)x+1, (size_t)y+1);
+                fillGrid(copy, (size_t)x+1, (size_t)y+1);
                 result.emplace_back(shape);
             }
         }
