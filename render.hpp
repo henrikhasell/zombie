@@ -8,6 +8,10 @@
 #include "camera.hpp"
 #include "grid.hpp"
 
+void InitialiseRenderer();
+
+void CleanupRenderer();
+
 void UpdateProjection(const Camera &camera);
 
 void RenderGrid(const Grid<bool> &grid);
@@ -21,5 +25,7 @@ void RenderPlayer(const b2Body &body);
 void RenderBullet(const b2Body &body);
 
 void RenderZombie(const b2Body &body);
+
+void RenderText(GLfloat x, GLfloat y, const char format[], ...);
 
 #endif

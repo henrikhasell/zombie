@@ -1,3 +1,4 @@
+#include "font.hpp"
 #include "render.hpp"
 #include "configuration.hpp"
 #include <cmath>
@@ -20,7 +21,6 @@ static void _drawCircle(GLfloat x, GLfloat y, GLfloat r)
 
 static void _drawSquare(GLfloat x, GLfloat y, GLfloat w, GLfloat h)
 {
-    glColor3f(0.2f, 0.2f, 0.2f);
     glBegin(GL_LINE_LOOP);
     glVertex2f(x, y);
     glVertex2f(x+w, y);
@@ -31,19 +31,31 @@ static void _drawSquare(GLfloat x, GLfloat y, GLfloat w, GLfloat h)
 
 static void _drawFilledSquare(GLfloat x, GLfloat y, GLfloat w, GLfloat h)
 {
-    glColor3f(0.2f, 0.2f, 0.2f);
     glBegin(GL_TRIANGLE_STRIP);
+    glTexCoord2f(1.0f, 0.0f);
     glVertex2f(x+w, y);
+    glTexCoord2f(0.0f, 0.0f);
     glVertex2f(x, y);
+    glTexCoord2f(1.0f, 1.0f);
     glVertex2f(x+w, y+h);
+    glTexCoord2f(0.0f, 1.0f);
     glVertex2f(x, y+h);
     glEnd();
 }
 
-static void _drawHitpointsBar(GLfloat x, GLfloat y, GLfloat percentage)
-{
+static Font *font;
 
+void InitialiseRenderer()
+{
+    font = new Font();
+    font->load("NanumGothicCoding-Regular.ttf", 32);
 }
+
+void CleanupRenderer()
+{
+    delete font;
+}
+
 
 void UpdateProjection(const Camera &camera)
 {
@@ -61,6 +73,8 @@ void UpdateProjection(const Camera &camera)
 
 void RenderGrid(const Grid<bool> &grid)
 {
+    glColor3f(0.2f, 0.2f, 0.2f);
+
     for(size_t x = 0; x < grid.w; x++)
     {
         for(size_t y = 0; y < grid.h; y++)
@@ -87,7 +101,7 @@ void RenderCursor(const Grid<bool> &grid, const Camera &camera)
     x /= (TILE_W * camera.zoom);
     y /= (TILE_H * camera.zoom);
 
-    if(x >= (int)grid.w || y >= (int)grid.h)
+    if(x >= grid.w || y >= grid.h)
     {
         return;
     }
@@ -185,4 +199,23 @@ void RenderZombie(const b2Body &body)
         glVertex2f(point.x, point.y);
     }
     glEnd();
+}
+
+void RenderText(GLfloat x, GLfloat y, const char format[], ...)
+{
+    va_list a1, a2;
+    va_start(a1, format);
+    va_copy(a2, a1);
+
+    size_t size = (size_t)vsnprintf(nullptr, 0, format, a1) + 1;
+    char *buffer = new char[size];
+    vsnprintf(buffer, size, format, a2);
+    va_end(a1);
+    va_end(a2);
+    Texture texture;
+    font->renderString(texture, buffer);
+    texture.bind();
+    delete[] buffer;
+    glColor3f(1.0f, 1.0f, 1.0f);
+    _drawFilledSquare(x, y, (GLfloat)texture.w / 10.0f, (GLfloat)texture.h / 10.0f);
 }

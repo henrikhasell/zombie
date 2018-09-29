@@ -75,6 +75,9 @@ struct Zombie : public PhysicsObject
 
     void step()
     {
+        path.clear();
+        game->calculatePath(body->GetPosition(), game->player->GetPosition(), path);
+
         if(!path.empty())
         {
             constexpr float32 speed = 5.0f;
@@ -88,14 +91,10 @@ struct Zombie : public PhysicsObject
             direction *= speed;
             body->SetLinearVelocity(direction);
 
-            if(distance < 0.1f)
+            if(distance < 0.3f)
             {
                 path.erase(path.begin());
             }
-        }
-        else
-        {
-            game->calculatePath(body->GetPosition(), game->player->GetPosition(), path);
         }
     }
 };

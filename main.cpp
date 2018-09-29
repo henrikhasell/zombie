@@ -73,16 +73,23 @@ int main(int argc, char *argv[])
 
                         if(glewStatus == GLEW_OK)
                         {
+                            InitialiseRenderer();
+
+                            glEnable(GL_BLEND);
                             glEnable(GL_CULL_FACE);
+                            glEnable(GL_TEXTURE_2D);
+                            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
                             std::vector<Shape> shapes;
 
                             Game game;
+                            shapes = Marching::solveGrid(game.grid);
 
                             game.camera.x = -2.0f;
                             game.camera.y = -2.0f;
                             game.camera.w = WINDOW_W;
                             game.camera.h = WINDOW_H;
-                            game.camera.zoom = 10;
+                            game.camera.zoom = 20;
 
                             UpdateProjection(game.camera);
 
@@ -149,11 +156,14 @@ int main(int argc, char *argv[])
                                 {
                                     RenderZombie(*zombie);
                                 }
+                                RenderText(0.0f, 0.0f, "Hello, world! %d test.", 1000);
                                 
                                 SDL_GL_SwapWindow(window);
 
                                 SDL_Delay(20);
                             }
+
+                            CleanupRenderer();
                         }
                         else
                         {
