@@ -121,6 +121,24 @@ void RenderCursor(const Grid<bool> &grid, const Camera &camera)
     glPopMatrix();
 }
 
+void RenderPathBuilder(Navigation::PathBuilder &pathBuilder)
+{
+    glColor3f(0.0f, 1.0f, 0.0f);
+
+    for(int x = 0; x < pathBuilder.width; x++)
+    {
+        for(int y = 0; y < pathBuilder.height; y++)
+        {
+            Navigation::Tile *tile = pathBuilder.getTile(x, y);
+            if(tile->cost < 99.0f)
+            {
+                RenderText(TILE_W * x, TILE_H * y, "%.2f", tile->cost);
+            }
+
+        }
+    }
+}
+
 void RenderShape(const std::vector<glm::vec2> &shape)
 {
     glColor3f(1.0f, 0.0f, 0.0f);
@@ -150,8 +168,12 @@ void RenderPlayer(const b2Body &body)
     glColor3f(1.0f, 1.0f, 1.0f);
     glPushMatrix();
     glTranslatef(position.x, position.y, 0.0f);
+    glPushMatrix();
     glRotatef(rotation * 57.2958f, 0.0f, 0.0f, 1.0f);
     _drawCircle(0.0f, 0.0f, 1.0f);
+    glPopMatrix();
+    glColor3f(1.0f, 1.0f, 0.0f);
+    RenderText(0.0f, 1.1f, "%.2f", rotation * 57.2958f);
     glPopMatrix();
 }
 
@@ -193,7 +215,6 @@ void RenderZombie(const b2Body &body)
     glVertex2f(position.x - w / 2.0f, position.y - 1.55f);
     glEnd();
     glBegin(GL_POINTS);
-    glColor3f(0.0f, 1.0f, 0.0f);
     for(const b2Vec2 &point : zombie->path)
     {
         glVertex2f(point.x, point.y);
@@ -216,6 +237,5 @@ void RenderText(GLfloat x, GLfloat y, const char format[], ...)
     font->renderString(texture, buffer);
     texture.bind();
     delete[] buffer;
-    glColor3f(1.0f, 1.0f, 1.0f);
-    _drawFilledSquare(x, y, (GLfloat)texture.w / 10.0f, (GLfloat)texture.h / 10.0f);
+    _drawFilledSquare(x, y, (GLfloat)texture.w / 40.0f, (GLfloat)texture.h / 40.0f);
 }

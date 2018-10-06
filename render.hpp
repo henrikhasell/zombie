@@ -18,6 +18,8 @@ void RenderGrid(const Grid<bool> &grid);
 
 void RenderCursor(const Grid<bool> &grid, const Camera &camera);
 
+void RenderPathBuilder(Navigation::PathBuilder &pathBuilder);
+
 void RenderShape(const std::vector<glm::vec2> &shape);
 
 void RenderPlayer(const b2Body &body);

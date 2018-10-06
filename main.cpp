@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
                             game.camera.y = -2.0f;
                             game.camera.w = WINDOW_W;
                             game.camera.h = WINDOW_H;
-                            game.camera.zoom = 20;
+                            game.camera.zoom = 15;
 
                             UpdateProjection(game.camera);
 
@@ -151,12 +151,11 @@ int main(int argc, char *argv[])
                                 {
                                     RenderBullet(*bullet);
                                 }
-                                glColor3f(0.0f, 1.0f, 0.0f);
+
                                 for(b2Body *zombie : game.zombies)
                                 {
                                     RenderZombie(*zombie);
                                 }
-                                RenderText(0.0f, 0.0f, "Hello, world! %d test.", 1000);
                                 
                                 SDL_GL_SwapWindow(window);
 

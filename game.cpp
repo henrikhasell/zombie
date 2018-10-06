@@ -30,6 +30,9 @@ Game::Game() : grid(20, 20, hardcoded_map), world(b2Vec2_zero), pathBuilder(grid
     world.SetContactListener(&contactListener);
     player = createPlayer(b2Vec2(10.0f, 10.0f));
     zombies.emplace_back(createZombie(b2Vec2(26.0f, 41.0f)));
+    zombies.emplace_back(createZombie(b2Vec2(26.0f, 45.0f)));
+    zombies.emplace_back(createZombie(b2Vec2(26.0f, 49.0f)));
+    zombies.emplace_back(createZombie(b2Vec2(26.0f, 53.0f)));
     buildWalls();
 }
 

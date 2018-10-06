@@ -80,21 +80,67 @@ struct Zombie : public PhysicsObject
 
         if(!path.empty())
         {
-            constexpr float32 speed = 5.0f;
+            const float32 speed = 5.0f;
 
             const b2Vec2 &head = path[0];
             const b2Vec2 &position = body->GetPosition();
 
             b2Vec2 direction = head - position;
             float32 distance = direction.Normalize();
-            body->SetTransform(position, atan2(direction.x, -direction.y));
-            direction *= speed;
-            body->SetLinearVelocity(direction);
 
-            if(distance < 0.3f)
+            const float32 rotation = atan2(direction.x, -direction.y);
+
+            if(rotation > 0)
             {
-                path.erase(path.begin());
+                if(rotation < M_PI / 8)
+                {
+                    direction = b2Vec2(0.0f, -1.0f);
+                }
+                else if(rotation < M_PI / 8 + M_PI / 4)
+                {
+                    direction = b2Vec2(1.0f, -1.0f);
+                }
+                else if(rotation < M_PI / 8 + M_PI / 4 +  M_PI / 4)
+                {
+                    direction = b2Vec2(1.0f, 0.0f);
+                }
+                else if(rotation < M_PI / 8 + M_PI / 4 + M_PI / 4 + M_PI / 4)
+                {
+                    direction = b2Vec2(1.0f, 1.0f);
+                }
+                else if(rotation < M_PI / 8 + M_PI / 4 + M_PI / 4 + M_PI / 4 + M_PI / 8)
+                {
+                    direction = b2Vec2(0.0f, 1.0f);
+                }
             }
+            else
+            {
+                if(rotation > -M_PI / 8)
+                {
+                    direction = b2Vec2(0.0f, -1.0f);
+                }
+                else if(rotation > -M_PI / 8 - M_PI / 4)
+                {
+                    direction = b2Vec2(-1.0f, -1.0f);
+                }
+                else if(rotation > -M_PI / 8 - M_PI / 4 -  M_PI / 4)
+                {
+                    direction = b2Vec2(-1.0f, 0.0f);
+                }
+                else if(rotation > -M_PI / 8 - M_PI / 4 - M_PI / 4 - M_PI / 4)
+                {
+                    direction = b2Vec2(-1.0f, 1.0f);
+                }
+                else if(rotation > -M_PI / 8 - M_PI / 4 - M_PI / 4 - M_PI / 4 - M_PI / 8)
+                {
+                    direction = b2Vec2(0.0f, 1.0f);
+                }
+            }
+
+            direction.Normalize();
+            direction *= speed;
+            body->SetTransform(position, atan2(direction.x, -direction.y));
+            body->SetLinearVelocity(direction);
         }
     }
 };

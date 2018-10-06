@@ -94,7 +94,7 @@ static void priority_insert(
     list.insert(i, tile);
 }
 
-bool PathBuilder::calculatePath(Tile *start, Tile *finish)
+void PathBuilder::calculatePath(Tile *finish)
 {
     reset();
 
@@ -123,14 +123,7 @@ bool PathBuilder::calculatePath(Tile *start, Tile *finish)
         {
             if(selected && selected->navigate(head, 1.0f))
             {
-                if(selected == start)
-                {
-                    return true;
-                }
-                else
-                {
-                    priority_insert(open_set, selected, finish, start);
-                }
+                open_set.push_back(selected);
             }
         }
 
@@ -173,34 +166,22 @@ bool PathBuilder::calculatePath(Tile *start, Tile *finish)
         {
             if(selected && selected->navigate(head, 1.4f))
             {
-                if(selected == start)
-                {
-                    return true;
-                }
-                else
-                {
-                    priority_insert(open_set, selected, finish, start);
-                }
+                open_set.push_back(selected);
             }
         }
     }
-
-    return false;
 }
 
 bool PathBuilder::calculatePath(Tile *start, Tile *finish, std::vector<const Tile*> &path)
 {
-    bool result = calculatePath(start, finish);
+    calculatePath(finish);
 
-    if(result)
+    if(start->parent)
     {
-        for(const Tile *tile = start; tile; tile = tile->parent)
-        {
-            path.push_back(tile);
-        }
+        path.push_back(start->parent);
     }
 
-    return result;
+    return start->parent != nullptr;
 }
 
 void PathBuilder::reset()

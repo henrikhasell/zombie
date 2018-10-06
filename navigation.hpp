@@ -31,7 +31,7 @@ namespace Navigation
         ~PathBuilder();
         Tile *getTile(int x, int y);
         Tile *getTileSafely(int x, int y);
-        bool calculatePath(Tile *finish, Tile *start);
+        void calculatePath(Tile *finish);
         bool calculatePath(Tile *finish, Tile *start, std::vector<const Tile*> &path);
         void reset();
     };
