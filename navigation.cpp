@@ -172,16 +172,6 @@ void PathBuilder::calculatePath(Tile *finish)
     }
 }
 
-bool PathBuilder::calculatePath(Tile *start, std::vector<const Tile*> &path)
-{
-    if(start->parent)
-    {
-        path.push_back(start->parent);
-    }
-
-    return start->parent != nullptr;
-}
-
 void PathBuilder::reset()
 {
     for(int x = 0; x < width; x++)

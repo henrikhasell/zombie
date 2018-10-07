@@ -35,7 +35,7 @@ public:
     void step();
     void buildWalls();
     void useWeapon(b2Body *player);
-    bool calculatePath(const b2Vec2 &start, const b2Vec2 &finish, std::vector<b2Vec2> &path);
+    bool calculatePath(const b2Vec2 &location, b2Vec2 &direction);
 
     void attachBox(b2Body *body, const b2Vec2 &size);
     void attachCircle(b2Body *body, float32 radius);

@@ -32,7 +32,6 @@ namespace Navigation
         Tile *getTile(int x, int y);
         Tile *getTileSafely(int x, int y);
         void calculatePath(Tile *finish);
-        bool calculatePath(Tile *start, std::vector<const Tile*> &path);
         void reset();
     };
 }

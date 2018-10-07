@@ -235,10 +235,6 @@ void RenderZombie(const b2Body &body)
     glVertex2f(position.x - w / 2.0f, position.y - 1.55f);
     glEnd();
     glBegin(GL_POINTS);
-    for(const b2Vec2 &point : zombie->path)
-    {
-        glVertex2f(point.x, point.y);
-    }
     glEnd();
 }
 
