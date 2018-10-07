@@ -5,30 +5,17 @@
 #include <iostream>
 #include "contact.hpp"
 #include "game.hpp"
+#include "weapon.hpp"
 
 struct Player : public PhysicsObject
 {
-    int weaponCooldown;
+    const Weapon *weapon;
+    float delay;
 
-    Player(Game *game, b2Body *body) : PhysicsObject(game, body), weaponCooldown(0)
-    {
-
-    }
-
-    virtual void onBeginContact(b2Body *other)
-    {
-        //std::cout << "Player contact start." << std::endl;
-    }
-
-    virtual void onEndContact(b2Body *other)
-    {
-        //std::cout << "Player contact end." << std::endl;
-    }
-
-    void step()
-    {
-        weaponCooldown--;
-    }
+    Player(Game *game, b2Body *body);
+    virtual void onBeginContact(b2Body *other);
+    virtual void onEndContact(b2Body *other);
+    void step();
 };
 
 struct Zombie : public PhysicsObject

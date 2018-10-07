@@ -59,7 +59,7 @@ void Game::handleInput(const Uint8 *keyboardState)
     }
     if(keyboardState[SDL_SCANCODE_SPACE])
     {
-        shootBullet(player);
+        useWeapon(player);
     }
 
     velocity.Normalize();
@@ -76,7 +76,7 @@ void Game::handleInput(const Uint8 *keyboardState)
     velocity.x *= PLAYER_SPEED;
     velocity.y *= PLAYER_SPEED;
 
-    player->SetLinearVelocity(velocity);
+    player->ApplyForceToCenter(velocity, true);
 
     if(keyboardState[SDL_SCANCODE_UP])
     {
@@ -98,6 +98,8 @@ void Game::handleInput(const Uint8 *keyboardState)
 
 void Game::step()
 {
+    const b2Vec2 playerPosition = player->GetPosition();
+
     for(b2Body *body : delete_list)
     {
         PhysicsObject *data = (PhysicsObject*)body->GetUserData();
@@ -112,6 +114,13 @@ void Game::step()
     }
     delete_list.clear();
 
+    pathBuilder.calculatePath(
+        pathBuilder.getTile(
+            (int)(playerPosition.x / TILE_W),
+            (int)(playerPosition.y / TILE_H)
+        )
+    );
+
     ((Player*)player->GetUserData())->step();
 
     for(b2Body *zombie : zombies)
@@ -120,7 +129,6 @@ void Game::step()
     }
 
     world.Step(1.0f/60.0f, 6, 2);
-    const b2Vec2 playerPosition = player->GetPosition();
     camera.lock(playerPosition.x, playerPosition.y);
 }
 
@@ -148,30 +156,17 @@ void Game::buildWalls()
     }
 }
 
-void Game::shootBullet(b2Body *player)
+void Game::useWeapon(b2Body *player)
 {
-    Player *playerData = (Player*)player->GetUserData();
+    Player *player_data = (Player*)player->GetUserData();
 
-    if(playerData->weaponCooldown > 0)
+    if(player_data->delay > 0)
     {
         return;
     }
-    else
-    {
-        playerData->weaponCooldown = 10;
-    }
 
-    float32 rotation = player->GetAngle();
-
-    b2Vec2 startingPosition = player->GetPosition();
-    startingPosition.x += sinf(rotation) * 1.5f;
-    startingPosition.y -= cosf(rotation) * 1.5f;
-
-    b2Vec2 velocity = player->GetLinearVelocity();
-    velocity.x += sinf(rotation) * 30.0f;
-    velocity.y -= cosf(rotation) * 30.0f;
-
-    createBullet(startingPosition, velocity, rotation);
+    player_data->delay = player_data->weapon->delay;
+    player_data->weapon->use(this, player);
 }
 
 void Game::attachBox(b2Body *body, const b2Vec2 &size)
@@ -207,6 +202,7 @@ b2Body *Game::createPlayer(const b2Vec2 &position)
     bodyDefinition.type = b2_dynamicBody;
     bodyDefinition.position = position;
     bodyDefinition.fixedRotation = true;
+    bodyDefinition.linearDamping = 0.5f;
     b2Body *body = world.CreateBody(&bodyDefinition);
     body->SetUserData(new Player(this, body));
     attachCircle(body, 1.0f);
@@ -248,14 +244,10 @@ bool Game::calculatePath(const b2Vec2 &start, const b2Vec2 &finish, std::vector<
     const int sx = (int)start.x / TILE_W;
     const int sy = (int)start.y / TILE_H;
 
-    const int fx = (int)finish.x / TILE_W;
-    const int fy = (int)finish.y / TILE_H;
-
     std::vector<const Tile *> tile_path;
 
     bool result = pathBuilder.calculatePath(
         pathBuilder.getTile(sx, sy),
-        pathBuilder.getTile(fx, fy),
         tile_path);
 
     if(result)

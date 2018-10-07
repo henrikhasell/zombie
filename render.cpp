@@ -163,6 +163,9 @@ void RenderShape(const std::vector<glm::vec2> &shape)
 
 void RenderPlayer(const b2Body &body)
 {
+    const Player *player = (Player*)body.GetUserData();
+    const Weapon *weapon = player->weapon;
+
     const b2Vec2 &position = body.GetPosition();
     const float32 rotation = body.GetAngle();
     glColor3f(1.0f, 1.0f, 1.0f);
@@ -174,13 +177,17 @@ void RenderPlayer(const b2Body &body)
     glPopMatrix();
     glColor3f(1.0f, 1.0f, 0.0f);
     RenderText(0.0f, 1.1f, "%.2f", rotation * 57.2958f);
+    glColor3f(1.0f, 1.0f, 1.0f);
+    RenderText(0.0f, -2.0f, weapon->name.data());
     glPopMatrix();
 }
 
 void RenderBullet(const b2Body &body)
 {
+
     const b2Vec2 &position = body.GetPosition();
     const float32 rotation = body.GetAngle();
+
     glColor3f(1.0f, 0.0f, 0.0f);
     glPushMatrix();
     glTranslatef(position.x, position.y, 0.0f);
@@ -192,8 +199,21 @@ void RenderBullet(const b2Body &body)
 void RenderZombie(const b2Body &body)
 {
     constexpr float w = 2.0f;
-    RenderPlayer(body);
+
     const b2Vec2 &position = body.GetPosition();
+    const float32 rotation = body.GetAngle();
+
+    glColor3f(1.0f, 1.0f, 1.0f);
+    glPushMatrix();
+    glTranslatef(position.x, position.y, 0.0f);
+    glPushMatrix();
+    glRotatef(rotation * 57.2958f, 0.0f, 0.0f, 1.0f);
+    _drawCircle(0.0f, 0.0f, 1.0f);
+    glPopMatrix();
+    glColor3f(1.0f, 1.0f, 0.0f);
+    RenderText(0.0f, 1.1f, "%.2f", rotation * 57.2958f);
+    glPopMatrix();
+
     Zombie *zombie = (Zombie*)body.GetUserData();
 
     glColor3f(1.0f, 0.0f, 0.0f);

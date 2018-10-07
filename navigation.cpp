@@ -106,17 +106,17 @@ void PathBuilder::calculatePath(Tile *finish)
     while(!open_set.empty())
     {
         const Tile *head = open_set.front();
+
         const int x = head->x;
         const int y = head->y;
 
         open_set.pop_front();
 
-
         Tile *adjacent[4] = {
-                getTileSafely(x + 1, y + 0),
-                getTileSafely(x - 1, y + 0),
-                getTileSafely(x + 0, y + 1),
-                getTileSafely(x + 0, y - 1)
+            getTileSafely(x + 1, y + 0),
+            getTileSafely(x - 1, y + 0),
+            getTileSafely(x + 0, y + 1),
+            getTileSafely(x + 0, y - 1)
         };
 
         for(Tile *selected : adjacent)
@@ -172,10 +172,8 @@ void PathBuilder::calculatePath(Tile *finish)
     }
 }
 
-bool PathBuilder::calculatePath(Tile *start, Tile *finish, std::vector<const Tile*> &path)
+bool PathBuilder::calculatePath(Tile *start, std::vector<const Tile*> &path)
 {
-    calculatePath(finish);
-
     if(start->parent)
     {
         path.push_back(start->parent);

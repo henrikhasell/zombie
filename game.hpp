@@ -34,9 +34,9 @@ public:
     void handleInput(const Uint8 *keyboardState);
     void step();
     void buildWalls();
-    void shootBullet(b2Body *player);
+    void useWeapon(b2Body *player);
     bool calculatePath(const b2Vec2 &start, const b2Vec2 &finish, std::vector<b2Vec2> &path);
-protected:
+
     void attachBox(b2Body *body, const b2Vec2 &size);
     void attachCircle(b2Body *body, float32 radius);
     b2Body *createPlayer(const b2Vec2 &position);
