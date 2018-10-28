@@ -13,7 +13,7 @@ namespace Marching
         None, Up, Down, Left, Right
     };
 
-    Shape solveShape(const Grid<bool> &grid, int x, int y);
+    Shape solveShape(const Grid<bool> &grid, Grid<bool> &visited, int x, int y);
 
     std::vector<Shape> solveGrid(const Grid<bool> &grid);
 }

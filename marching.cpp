@@ -22,24 +22,24 @@ static const Marching::Solution solutions[16] = {
     Marching::Solution::None
 };
 
-static const glm::uvec2 offsets[16] = {
-    { 0, 0 },
-    { 0, 0 },
-    { 1, 0 },
-    { 0, 0 },
-    { 0, 1 },
-    { 0, 0 },
-    { 0, 1 },
-    { 0, 0 },
-    { 1, 1 },
-    { 0, 0 },
-    { 1, 0 },
-    { 0, 0 },
-    { 0, 1 },
-    { 0, 0 },
-    { 1, 0 },
-    { 0, 0 }
-};
+// static const glm::uvec2 offsets[16] = {
+//     { 0, 0 },
+//     { 0, 0 },
+//     { 1, 0 },
+//     { 0, 0 },
+//     { 0, 1 },
+//     { 0, 0 },
+//     { 0, 1 },
+//     { 0, 0 },
+//     { 1, 1 },
+//     { 0, 0 },
+//     { 1, 0 },
+//     { 0, 0 },
+//     { 0, 1 },
+//     { 0, 0 },
+//     { 1, 0 },
+//     { 0, 0 }
+// };
 
 static bool coordInBounds(const Grid<bool> &grid, int x, int y)
 {
@@ -51,34 +51,34 @@ static bool safeGetTile(const Grid<bool> &grid, int x, int y)
     return coordInBounds(grid, x, y) && grid.getTile(x, y);
 }
 
-static void fillGrid(Grid<bool> &grid, size_t x, size_t y)
-{
-    std::queue<glm::uvec2> open_set;
-    open_set.emplace(x, y);
-
-    while(!open_set.empty())
-    {
-        const glm::uvec2 &current = open_set.front();
-
-        grid.getTile(current.x, current.y) = false;
-
-        const glm::uvec2 neighbours[] = {
-                { current.x - 1, current.y },
-                { current.x + 1, current.y },
-                { current.x, current.y - 1 },
-                { current.x, current.y + 1 }
-        };
-
-        for(const glm::uvec2 &neighbour : neighbours)
-        {
-            if(safeGetTile(grid, neighbour.x, neighbour.y))
-            {
-                open_set.emplace(neighbour.x, neighbour.y);
-            }
-        }
-        open_set.pop();
-    }
-}
+// static void fillGrid(Grid<bool> &grid, size_t x, size_t y)
+// {
+//     std::queue<glm::uvec2> open_set;
+//     open_set.emplace(x, y);
+// 
+//     while(!open_set.empty())
+//     {
+//         const glm::uvec2 &current = open_set.front();
+// 
+//         grid.getTile(current.x, current.y) = false;
+// 
+//         const glm::uvec2 neighbours[] = {
+//                 { current.x - 1, current.y },
+//                 { current.x + 1, current.y },
+//                 { current.x, current.y - 1 },
+//                 { current.x, current.y + 1 }
+//         };
+// 
+//         for(const glm::uvec2 &neighbour : neighbours)
+//         {
+//             if(safeGetTile(grid, neighbour.x, neighbour.y))
+//             {
+//                 open_set.emplace(neighbour.x, neighbour.y);
+//             }
+//         }
+//         open_set.pop();
+//     }
+// }
 
 static size_t getIndex(const Grid<bool> &grid, int x, int y)
 {
@@ -129,7 +129,7 @@ static Marching::Solution solveTile(const Grid<bool> &grid, int x, int y, Marchi
     return solutions[index];
 }
 
-Shape Marching::solveShape(const Grid<bool> &grid, int x, int y)
+Shape Marching::solveShape(const Grid<bool> &grid, Grid<bool> &visited, int x, int y)
 {
     Shape result;
 
@@ -172,6 +172,8 @@ Shape Marching::solveShape(const Grid<bool> &grid, int x, int y)
             result.points.emplace_back(result.points[0]);
             break;
         }
+
+	visited.getTile(current_x, current_y) = true;
     }
 
     return result;
@@ -180,6 +182,7 @@ Shape Marching::solveShape(const Grid<bool> &grid, int x, int y)
 std::vector<Shape> Marching::solveGrid(const Grid<bool> &grid)
 {
     Grid<bool> copy = grid;
+    Grid<bool> visited(grid.w, grid.h);
     std::vector<Shape> result;
 
     Marching::Solution solution = Marching::Solution::None;
@@ -188,13 +191,16 @@ std::vector<Shape> Marching::solveGrid(const Grid<bool> &grid)
     {
         for(int x = 0; x < (int)grid.w - 1; x++)
         {
+	    if(visited.getTile(x, y))
+	    {
+                continue;
+	    }
+
             solution = solveTile(copy, x, y, solution);
 
             if(solution != Marching::Solution::None)
             {
-                const glm::uvec2 &offset = offsets[getIndex(copy, x, y)];
-                const Shape shape = Marching::solveShape(copy, x, y);
-                fillGrid(copy, (size_t)x+1, (size_t)y+1);
+                const Shape shape = Marching::solveShape(copy, visited, x, y);
                 result.emplace_back(shape);
             }
         }
