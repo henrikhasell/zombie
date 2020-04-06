@@ -22,25 +22,6 @@ static const Marching::Solution solutions[16] = {
     Marching::Solution::None
 };
 
-// static const glm::uvec2 offsets[16] = {
-//     { 0, 0 },
-//     { 0, 0 },
-//     { 1, 0 },
-//     { 0, 0 },
-//     { 0, 1 },
-//     { 0, 0 },
-//     { 0, 1 },
-//     { 0, 0 },
-//     { 1, 1 },
-//     { 0, 0 },
-//     { 1, 0 },
-//     { 0, 0 },
-//     { 0, 1 },
-//     { 0, 0 },
-//     { 1, 0 },
-//     { 0, 0 }
-// };
-
 static bool coordInBounds(const Grid<bool> &grid, int x, int y)
 {
     return x >= 0 && y >= 0 && x < grid.w && y < grid.h;
@@ -50,35 +31,6 @@ static bool safeGetTile(const Grid<bool> &grid, int x, int y)
 {
     return coordInBounds(grid, x, y) && grid.getTile(x, y);
 }
-
-// static void fillGrid(Grid<bool> &grid, size_t x, size_t y)
-// {
-//     std::queue<glm::uvec2> open_set;
-//     open_set.emplace(x, y);
-// 
-//     while(!open_set.empty())
-//     {
-//         const glm::uvec2 &current = open_set.front();
-// 
-//         grid.getTile(current.x, current.y) = false;
-// 
-//         const glm::uvec2 neighbours[] = {
-//                 { current.x - 1, current.y },
-//                 { current.x + 1, current.y },
-//                 { current.x, current.y - 1 },
-//                 { current.x, current.y + 1 }
-//         };
-// 
-//         for(const glm::uvec2 &neighbour : neighbours)
-//         {
-//             if(safeGetTile(grid, neighbour.x, neighbour.y))
-//             {
-//                 open_set.emplace(neighbour.x, neighbour.y);
-//             }
-//         }
-//         open_set.pop();
-//     }
-// }
 
 static size_t getIndex(const Grid<bool> &grid, int x, int y)
 {
@@ -144,11 +96,12 @@ Shape Marching::solveShape(const Grid<bool> &grid, Grid<bool> &visited, int x, i
 
         if(previousSolution != solution)
         {
-            const float position_x = current_x * TILE_W + TILE_W;
-            const float position_y = current_y * TILE_H + TILE_H;
+            previousSolution = solution;
+
+            const float position_x = (current_x + 1) * TILE_W;
+            const float position_y = (current_y + 1) * TILE_H;
 
             result.points.emplace_back(position_x, position_y);
-            previousSolution = solution;
         }
 
         switch(solution)
@@ -173,7 +126,7 @@ Shape Marching::solveShape(const Grid<bool> &grid, Grid<bool> &visited, int x, i
             break;
         }
 
-	visited.getTile(current_x, current_y) = true;
+	    visited.getTile(current_x, current_y) = true;
     }
 
     return result;
@@ -187,14 +140,14 @@ std::vector<Shape> Marching::solveGrid(const Grid<bool> &grid)
 
     Marching::Solution solution = Marching::Solution::None;
 
-    for(int y = 0; y < (int)grid.h - 1; y++)
+    for(int y = 0; y < grid.h - 1; y++)
     {
-        for(int x = 0; x < (int)grid.w - 1; x++)
+        for(int x = 0; x < grid.w - 1; x++)
         {
-	    if(visited.getTile(x, y))
-	    {
+            if(visited.getTile(x, y))
+            {
                 continue;
-	    }
+            }
 
             solution = solveTile(copy, x, y, solution);
 

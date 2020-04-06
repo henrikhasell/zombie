@@ -6,7 +6,7 @@
 Weapon weaponList[3] = {
     {
         "Pistol",
-        1000.0f,
+        100.0f,
         .use = [](Game *game, b2Body *player)
         {
             std::cout << "Shooting pistol!" << std::endl;
@@ -18,8 +18,8 @@ Weapon weaponList[3] = {
             startingPosition.y -= cosf(rotation) * 1.5f;
 
             b2Vec2 velocity(
-                    +sinf(rotation) * 30.0f,
-                    -cosf(rotation) * 30.0f
+                +sinf(rotation) * 50.0f,
+                -cosf(rotation) * 50.0f
             );
 
             game->createBullet(startingPosition, velocity, rotation);

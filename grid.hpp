@@ -9,7 +9,7 @@ public:
     const int w;
     const int h;
 
-    Grid(size_t w, size_t h) : w(w), h(h)
+    Grid(int w, int h) : w(w), h(h)
     {
         data = new T[w * h];
     }
