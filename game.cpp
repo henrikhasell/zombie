@@ -29,10 +29,7 @@ Game::Game() : grid(20, 20, hardcoded_map), world(b2Vec2_zero), pathBuilder(grid
 {
     world.SetContactListener(&contactListener);
     player = createPlayer(b2Vec2(10.0f, 10.0f));
-    zombies.emplace_back(createZombie(b2Vec2(26.0f, 41.0f)));
-    // zombies.emplace_back(createZombie(b2Vec2(26.0f, 45.0f)));
-    // zombies.emplace_back(createZombie(b2Vec2(26.0f, 49.0f)));
-    // zombies.emplace_back(createZombie(b2Vec2(26.0f, 53.0f)));
+    zombies.emplace_back(createZombie(b2Vec2(8.5 * TILE_W, 10.5 * TILE_H)));
     buildWalls();
 }
 
@@ -150,6 +147,8 @@ void Game::buildWalls()
         body->CreateFixture(&fixtureDefinition);
         walls.emplace_back(body);
     }
+
+    pathBuilder.loadGrid(grid);
 }
 
 void Game::useWeapon(b2Body *player)
@@ -234,21 +233,155 @@ b2Body *Game::createBullet(
     return body;
 }
 
-bool Game::calculatePath(const b2Vec2 &location, b2Vec2 &direction)
+bool Game::quickRayCast(const b2Vec2 &start, const b2Vec2 &finish)
+{
+    b2Vec2 ray_direction = finish - start;
+    ray_direction.Normalize();
+
+    int stepX = ray_direction.x >= 0 ? 1 : -1;
+    int stepY = ray_direction.y >= 0 ? 1 : -1;
+
+    float distanceFromEdgeX = stepX < 0 ? -fmod(start.x, TILE_W) : TILE_W - fmod(start.x, TILE_W);
+
+    float distanceFromEdgeY = stepY < 0 ? -fmod(start.y, TILE_H) : TILE_H - fmod(start.y, TILE_H);
+
+    float magnitudeToEdgeX = distanceFromEdgeX / ray_direction.x;
+    float magnitudeToEdgeY = distanceFromEdgeY / ray_direction.y;
+
+    float magnitudeForOneUnitX = TILE_W / fabs(ray_direction.x);
+    float magnitudeForOneUnitY = TILE_H / fabs(ray_direction.y);
+
+    Tile *current_tile = pathBuilder.getTileSafely(start.x / TILE_W, start.y / TILE_H);
+    Tile *target_tile = pathBuilder.getTileSafely(finish.x / TILE_W, finish.y / TILE_H);
+
+    if(!current_tile || !target_tile)
+    {
+        return false;
+    }
+
+    while(current_tile)
+    {
+        int X = current_tile->x;
+        int Y = current_tile->y;
+
+        if(!current_tile->navigable)
+        {
+            return false;
+        }
+
+        if(magnitudeToEdgeX < magnitudeToEdgeY)
+        {
+            magnitudeToEdgeX += magnitudeForOneUnitX;
+            X += stepX;
+        }
+        else
+        {
+            magnitudeToEdgeY += magnitudeForOneUnitY;
+            Y += stepY;
+        }
+
+        if(current_tile == target_tile)
+        {
+            break;
+        }
+
+        current_tile = pathBuilder.getTileSafely(X, Y);
+    }
+
+    return true;
+}
+
+
+bool Game::visible(const b2Vec2 &start, const b2Vec2 &finish)
+{
+    b2Vec2 diff = start - finish;
+    diff.Normalize();
+
+    const float angle = atan2f(diff.x, -diff.y);
+    constexpr float width = 1.;
+
+    b2Vec2 a_s = b2Vec2(
+            start.x + cosf(angle) * width,
+            start.y + sinf(angle) * width
+    );
+
+    b2Vec2 b_s = b2Vec2(
+            start.x - cosf(angle) * width,
+            start.y - sinf(angle) * width
+    );
+
+    b2Vec2 a_f = b2Vec2(
+            finish.x + cosf(angle) * width,
+            finish.y + sinf(angle) * width
+    );
+
+    b2Vec2 b_f = b2Vec2(
+            finish.x - cosf(angle) * width,
+            finish.y - sinf(angle) * width
+    );
+
+    return quickRayCast(start, finish) && quickRayCast(a_s, a_f) && quickRayCast(b_s, b_f);
+}
+
+std::vector<b2Vec2> Game::calculatePath(const b2Vec2 &location)
 {
     const int x = (int)location.x / TILE_W;
     const int y = (int)location.y / TILE_H;
 
-    std::vector<const Tile *> tile_path;
+    std::vector<b2Vec2> tile_path;
+
+    tile_path.push_back(location);
 
     const Tile *tile = pathBuilder.getTile(x, y);
 
-    if(tile && tile->parent)
+    while(tile)
     {
-        direction.x = (float32)(tile->parent->x - tile->x);
-        direction.y = (float32)(tile->parent->y - tile->y);
-        direction.Normalize();
+        tile_path.push_back(getTilePosition(tile));
+        tile = tile->parent;
     }
 
-    return tile && tile->parent;
+    std::vector<b2Vec2> minimal_path;
+    b2Vec2 previousViewpoint = tile_path[0], currentViewpoint = tile_path[0];
+
+    for(const b2Vec2 &node : tile_path)
+    {
+        if(minimal_path.empty() || !visible(currentViewpoint, node))
+        {
+            minimal_path.push_back(previousViewpoint);
+            currentViewpoint = previousViewpoint;
+        }
+        previousViewpoint = node;
+    }
+    minimal_path.push_back(player->GetPosition());
+    return minimal_path;
+}
+
+const Tile *Game::getNextTile(const b2Vec2 &location)
+{
+    const int x = (int)location.x / TILE_W;
+    const int y = (int)location.y / TILE_H;
+    const Tile *tile = pathBuilder.getTileSafely(x, y);
+    return tile ? tile->parent : nullptr;
+}
+
+bool Game::getDirection(const b2Vec2 &location, b2Vec2 &direction)
+{
+    auto path = calculatePath(location);
+
+    if(path.size() < 2) {
+        return false;
+    }
+
+    direction = path[1] - path[0];
+    direction.Normalize();
+
+    return true;
+}
+
+b2Vec2 getTilePosition(const Tile *tile)
+{
+    return b2Vec2(
+            ((float32)tile->x + 0.5f) * TILE_W,
+            ((float32)tile->y + 0.5f) * TILE_H
+    );
 }

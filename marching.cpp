@@ -126,7 +126,9 @@ Shape Marching::solveShape(const Grid<bool> &grid, Grid<bool> &visited, int x, i
             break;
         }
 
-	    visited.getTile(current_x, current_y) = true;
+        if(coordInBounds(visited, current_x, current_y)) {
+            visited.getTile(current_x, current_y) = true;
+        }
     }
 
     return result;

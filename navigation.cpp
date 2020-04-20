@@ -50,14 +50,7 @@ void Tile::reset()
 PathBuilder::PathBuilder(const Grid<bool> &grid) : width(grid.w), height(grid.h)
 {
     tiles = new Tile[width * height];
-
-    for(int x = 0; x < width; x++)
-    {
-        for(int y = 0; y < height; y++)
-        {
-            getTile(x, y)->initialise(x, y, !grid.getTile(x, y));
-        }
-    }
+    loadGrid(grid);
 }
 
 PathBuilder::~PathBuilder()
@@ -73,25 +66,6 @@ Tile *PathBuilder::getTile(int x, int y)
 Tile *PathBuilder::getTileSafely(int x, int y)
 {
     return (x > 0 && y > 0 && x < width && y < height) ? getTile(x, y) : nullptr;
-}
-
-static void priority_insert(
-    std::list<Tile*> &list,
-    Tile *tile,
-    Tile *start,
-    Tile *destination)
-{
-    auto i = list.begin();
-
-    while(
-        i != list.end() &&
-        (*i)->heuristic(start, destination) <
-        tile->heuristic(start, destination))
-    {
-        i++;
-    }
-
-    list.insert(i, tile);
 }
 
 void PathBuilder::calculatePath(Tile *finish)
@@ -168,6 +142,17 @@ void PathBuilder::calculatePath(Tile *finish)
             {
                 open_set.push_back(selected);
             }
+        }
+    }
+}
+
+void PathBuilder::loadGrid(const Grid<bool> &grid)
+{
+    for(int x = 0; x < width; x++)
+    {
+        for(int y = 0; y < height; y++)
+        {
+            getTile(x, y)->initialise(x, y, !grid.getTile(x, y));
         }
     }
 }

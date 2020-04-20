@@ -21,6 +21,7 @@ struct Player : public PhysicsObject
 struct Zombie : public PhysicsObject
 {
     static constexpr float max_hitpoints = 100.0f;
+    b2Vec2 direction;
     float hitpoints;
 
     Zombie(Game *game, b2Body *body) : PhysicsObject(game, body), hitpoints(max_hitpoints)
@@ -62,9 +63,9 @@ struct Zombie : public PhysicsObject
     {
         b2Vec2 direction;
 
-        if(game->calculatePath(body->GetPosition(), direction))
+        if(game->getDirection(body->GetPosition(), direction))
         {
-            const float32 speed = 2.0f;
+            const float32 speed = 5.0f;
             const float32 rotation = atan2(direction.x, -direction.y);
 
             body->SetTransform(body->GetPosition(), atan2(direction.x, -direction.y));

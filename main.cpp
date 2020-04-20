@@ -11,8 +11,8 @@
 #include "render.hpp"
 
 #define WINDOW_TITLE "Example OpenGL Context"
-#define WINDOW_W 800
-#define WINDOW_H 600
+#define WINDOW_W 1200
+#define WINDOW_H 800
 
 #define IMG_INIT_FLAGS (IMG_INIT_PNG | IMG_INIT_JPG)
 
@@ -154,7 +154,9 @@ int main(int argc, char *argv[])
 
                                 for(b2Body *zombie : game.zombies)
                                 {
+                                    auto path = game.calculatePath(zombie->GetPosition());
                                     RenderZombie(*zombie);
+                                    //RenderPath(path);
                                 }
                                 
                                 SDL_GL_SwapWindow(window);

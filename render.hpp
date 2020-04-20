@@ -28,6 +28,8 @@ void RenderBullet(const b2Body &body);
 
 void RenderZombie(const b2Body &body);
 
+void RenderPath(const std::vector<b2Vec2> &path);
+
 void RenderText(GLfloat x, GLfloat y, const char format[], ...);
 
 #endif

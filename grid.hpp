@@ -11,7 +11,7 @@ public:
 
     Grid(int w, int h) : w(w), h(h)
     {
-        data = new T[w * h];
+        data = new T[w * h]();
     }
 
     Grid(size_t w, size_t h, const T *data) : Grid(w, h)

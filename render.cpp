@@ -238,6 +238,24 @@ void RenderZombie(const b2Body &body)
     glEnd();
 }
 
+void RenderPath(const std::vector<b2Vec2> &path)
+{
+    glColor3f(0.7f, 0.0f, 0.0f);
+    glBegin(GL_LINE_STRIP);
+    for(b2Vec2 item : path)
+    {
+        glVertex2f(item.x, item.y);
+    }
+    glEnd();
+    glColor3f(1.0f, 0.0f, 0.0f);
+    glBegin(GL_POINTS);
+    for(b2Vec2 item : path)
+    {
+        glVertex2f(item.x, item.y);
+    }
+    glEnd();
+}
+
 void RenderText(GLfloat x, GLfloat y, const char format[], ...)
 {
     va_list a1, a2;

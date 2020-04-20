@@ -32,6 +32,7 @@ namespace Navigation
         Tile *getTile(int x, int y);
         Tile *getTileSafely(int x, int y);
         void calculatePath(Tile *finish);
+        void loadGrid(const Grid<bool> &grid);
         void reset();
     };
 }
